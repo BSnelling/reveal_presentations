@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js – The HTML Presentation Framework</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section>
+					<h2>Principles of Programming</h2>
+					<p>
+						Programming Skills Workshop - 3rd March 2026
+					</p>
+				</section>
+
+				<section>
+					<section>
+						<h2>KISS</h2>
+						<p><em>Keep It Simple, (Stupid)</em></p>
+					</section>
+
+					<section>
+						<h2>Anti-patterns</h2>
+						<ul>
+							<li class="fragment">Nested conditionals, "arrow code"</li>
+							<li class="fragment">Long methods, large classes</li>
+							<li class="fragment">Pieces of code that need a comment to explain what they do</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>Cyclomatic Complexity</h2>
+						<ul>
+							<li class="fragment">Measures the number of independent paths through a program's source code</li>
+							<li class="fragment">Increases with more conditionals, loops, logical operators</li>
+							<li class="fragment">Makes code harder to test, debug and maintain</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>Takeaway</h2>
+						<p>Aim for the simplest solution that works</p>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>DRY</h2>
+						<p><em>Don't Repeat Yourself</em></p>
+					</section>
+
+					<section>
+						<h2>Anti-patterns</h2>
+						<ul>
+							<li class="fragment">Copy-pasted code</li>
+							<li class="fragment">Fixing the same bug more than once</li>
+							<li class="fragment">Functions with similar names</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>Takeaway</h2>
+						<p>Extract repeated logic into reusable functions or classes</p>
+					</section>
+
+				</section>
+
+				<section>
+					<section>
+						<h2>YAGNI</h2>
+						<p><em>You Aren't Gonna Need It</em></p>
+					</section>
+
+					<section>
+						<h2>Anti-patterns</h2>
+						<ul>
+							<li class="fragment">Configs and kwargs that are never changed</li>
+							<li class="fragment">Premature generalisation</li>
+							<li class="fragment">Over-engineering e.g. an ABC with one implementation</li>
+						</ul>
+					</section>
+
+					<section>
+						<h2>Takeaway</h2>
+						<p>Ask yourself: "Do I really need this feature right now?"</p>
+					</section>
+
+				</section>
+
+				<section>
+					<section>
+						<h2>SOLID - object oriented principles</h2>
+						<ul>
+							<li class="fragment"><em>Single Responsibility Principle (SRP)</em></li>
+							<li class="fragment"><em>Open/Closed Principle (OCP)</em></li>
+							<li class="fragment"><em>Liskov Substitution Principle (LSP)</em></li>
+							<li class="fragment"><em>Interface Segregation Principle (ISP)</em></li>
+							<li class="fragment"><em>Dependency Inversion Principle (DIP)</em></li>
+						</ul>
+					</section>
+
+					<!-- <section>
+						<h2>Single Responsibility Principle</h2>
+						<p>Each class should have only one reason to change</p>
+					</section>
+
+					<section>
+						<h2>Open/Closed Principle</h2>
+						<p>Software entities should be open for extension but closed for modification</p>
+					</section>
+
+					<section>
+						<h2>Liskov Substitution Principle</h2>
+						<p>Objects of a superclass should be replaceable with objects of a subclass without breaking the program</p>
+					</section>
+
+					<section>
+						<h2>Interface Segregation Principle</h2>
+						<p>Clients should not be forced to depend on interfaces they do not use</p>
+					</section>
+
+					<section>
+						<h2>Dependency Inversion Principle</h2>
+						<p>High-level modules should not depend on low-level modules; both should depend on abstractions</p>
+					</section> -->
+				</section>
+
+				<section>
+
+					<section>
+						<h2>Liskov Substitution Principle</h2>
+						<p>Objects of a superclass should be replaceable with objects of a subclass without breaking the program</p>
+					</section>
+
+					<section>
+						<ul>
+							<li class="fragment">Subclasses should adhere to the contracts defined by their superclass</li>
+							<li class="fragment">Subclasses should not have stricter requirements on inputs</li>
+							<li class="fragment">Subclasses should not have looser constraints on their outputs</li>
+						</ul>
+					</section>
+
+					<section>
+						<pre data-id="code-animation"><code class="python" data-trim data-line-numbers>
+							class Bird:
+								def fly(self):
+									print("Flying")
+
+
+							class Duck(Bird):
+								def fly(self):
+									print("Duck flying")
+
+
+							class Penguin(Bird):
+								def fly(self):
+									raise NotImplementedError("Penguins can't fly")
+							</code></pre>
+					</section>
+
+					<section>
+						<pre data-id="code-animation"><code class="python" data-trim data-line-numbers>
+							def make_it_fly(bird: Bird):
+								bird.fly()
+
+							make_it_fly(Duck())
+							# Duck flying
+
+							make_it_fly(Penguin())
+							# NotImplementedError: Penguins can't fly
+							</code></pre>
+					</section>
+
+					<section>
+						<h2>Takeaway</h2>
+						<p>Design your class hierarchies with inheritance contracts in mind</p>
+					</section>
+
+				</section>
+
+				<section>
+					<h2>Summary</h2>
+					<ul>
+						<li class="fragment">KISS, DRY, YAGNI, LSP are all guidelines, not hard rules</li>
+						<li class="fragment">Sometimes there is tension between different principles</li>
+						<li class="fragment">Think of KISS and YAGNI upfront and DRY and LSP when refactoring</li>
+					</ul>
+				</section>
+
+				<!-- <section>
+					<h2>Interface Segregation Principle</h2>
+					<p>Avoid overly general or wide APIs</p>
+				</section> -->
+
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// MathJax4 configuration
+				mathjax4: {
+					tex: {
+						inlineMath: [['$', '$'], ['\\(', '\\)']],
+						displayMath: [['$$', '$$'], ['\\[', '\\]']],
+						macros: {
+							R: '\\mathbb{R}',
+							set: ['\\left\\{#1 \\; ; \\; #2\\right\\}', 2]
+						}
+					},
+					options: {
+						skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+					},
+					output: {
+						font: 'mathjax-stix2',
+						displayOverflow: 'linebreak',
+						linebreaks: {             // options for when overflow is linebreak
+							inline: true,              // true for browser-based breaking of inline equations
+							width: '100%',             // a fixed size or a percentage of the container width
+							lineleading: .2,           // the default lineleading in em units
+							LinebreakVisitor: null     // The LinebreakVisitor to use
+						}
+					}
+				},
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMath.MathJax4, RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>

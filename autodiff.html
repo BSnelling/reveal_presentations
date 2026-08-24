@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js – The HTML Presentation Framework</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section>
+					<h2>Automatic Differentiation</h2>
+					<p>
+						Lab Meeting -- 12/02/26 -- Branwen Snelling
+					</p>
+				</section>
+
+				<section>
+					<h2>Types of Differentiation</h2>
+					<ul>
+						<li>Symbolic</li>
+						<li>Numerical (finite differences)</li>
+						<li>Automatic</li>
+					</ul>
+				</section>
+
+				<section>
+					<section>
+						<h2>Manual and Symbolic Differentiation</h2>
+						<p>In the manual case, the expression for the derivative is derived and a function is written to calculate it.</p>
+						<pre data-id="code-animation"><code class="python" data-trim data-line-numbers>
+						def f(x):
+							return x * sin(x)
+
+						def dfdx(x):
+						    return x * cos(x) + sin(x)
+						</code></pre>
+
+					</section>
+					<section>
+						<p>In the symbolic case a program (e.g. SymPy) is used to derive the expression.</p>
+
+						<pre data-id="code-animation"><code class="python" data-trim data-line-numbers>
+							from sympy import sin
+							from sympy.abc import x
+
+							def f(x):
+								return x * sin(x)
+
+							y = f(x)
+							dydx = y.diff(x)
+							print(dydx) # x*cos(x) + sin(x)
+						</code></pre>
+					</section>
+				</section>
+
+				<section>
+					<h2>Finite Differences</h2>
+					<p>Approximate derivatives by evaluating the function at nearby points.</p>
+
+					\[\begin{aligned}
+					f^\prime(x) \approx \frac{f(x + \Delta x) - f(x)}{\Delta x}
+					\end{aligned} \]
+
+					<p>This is a forward difference approximation. One can also use a backward difference and get higher order approximations by combining these or adding more terms to a Taylor series.</p>
+
+				</section>
+
+				<section>
+					<h2>Automatic Differentiation</h2>
+					<p>Calculates exact derivatives directly on the program by breaking it down into intermediate variables and applying the chain rule.</p>
+				</section>
+
+				<!-- <section>
+					<h2>Forward Mode</h2>
+					<p>As an example, take this single variable polynomial function.</p>
+
+					\[\begin{aligned}
+					f(x) = x^2 + 4 x + 3
+					\end{aligned} \]
+				</section> -->
+
+				<!-- <section>
+					<section>
+						<h2>Forward Mode - Dual implementation</h2>
+						<p>Some autodiff libraries use Dual numbers to actually implement the tangent derivations.</p>
+
+						\[\begin{aligned}
+						\epsilon &\neq 0 \\
+						\epsilon^2 &= 0 \\
+						\end{aligned} \]
+					</section>
+
+					<section>
+						<p>Say we want to evaluate our function at $x = 2$. We use the Dual input value of $v_0 = 2 + 1\epsilon$.</p>
+
+						\[\begin{aligned}
+						f(v_0) &= (2 + 1\epsilon)(2 + 1\epsilon) + 4(2 + 1\epsilon) + 3 \\
+						&= 4 + 4\epsilon + \epsilon^2 + 8 + 4\epsilon + 3 \\
+						&= 15 + 8\epsilon \\
+						\end{aligned} \]
+
+						This gives us a primal value of 15 and a tangent value of 8.
+					</section>
+				</section> -->
+
+				<section>
+					<section>
+						<h2>Forward Mode</h2>
+						<p>In this AD mode we calculate the value of each intermediate variable and the value of its derivative (known as <em>primals</em> and <em>tangents</em>).</p>
+						<p>To calculate derivatives we make use of the chain rule.</p>
+
+					</section>
+					
+					<section>
+						<h2>The Chain rule</h2>
+						
+						\[\begin{aligned}
+						\frac{d}{dx} f(g(x)) &= f^\prime(g(x)) \cdot g^\prime(x) \\ \\
+						y &= \cos(x^2) \\
+						\frac{dy}{dx} &= - 2x \sin(x^2)
+						\end{aligned} \]
+
+					</section>
+
+					<section>
+						<p>Let's take a function with two arguments.</p>
+
+						<pre data-id="code-animation"><code class="python" data-trim data-line-numbers>
+							def f(x, y):
+								return x * y + sin(x)
+						</code></pre>
+ 
+					</section>
+
+					<section>
+						<img src="assets/computational_graph.png" style="height: auto;">
+					</section>
+
+					<section>
+						<img src="assets/computational_graph_with_diffs.png" style="height: auto;">
+					</section>
+
+					<!-- <section>
+
+						<p>Then apply the chain rule, differentiating with respect to a third variable $t$. We can later substitue $x$ or $y$ for $t$ to compute the derivative with respect to $x$ and $y$.</p>
+
+						\[\begin{aligned}
+						\frac{\partial (x y)}{\partial t} &= x \frac{\partial y}{\partial t} + y \frac{\partial x}{\partial t} \\
+						\frac{\partial (\sin(x))}{\partial t} &= \cos(x) \frac{\partial x}{\partial t} \\
+						\frac{\partial f}{\partial t} &= \frac{\partial (x y)}{\partial t} + \frac{\partial (\sin(x))}{\partial t} \\
+						\end{aligned} \]
+
+					</section> -->
+					
+				</section>
+
+				<section>
+					<p>Now we can calculate gradients with respect to each parameter alongside the computation of our functions when we run the program.</p>
+					<p>The cost of forward mode computation scales in proportion to the number of input variables we have, because we compute gradients alongside values as we step through the computational graph.</p>
+
+				</section>
+
+				<section>
+					<h2>Reverse Mode</h2>
+					<p>This mode also makes use of the chain rule but in the opposite direction. The forward pass calculates the values of all the intermediate variables.</p>
+					<p>The reverse pass calculates the gradients of the output with respect to each intermediate variable.</p>
+
+				</section>
+
+				<!-- <section>
+					\[\begin{aligned}
+					\frac{\partial f}{\partial a} &= 1 \hspace{11em} \hfill \frac{\partial f}{\partial b} &= 1 \\
+					\frac{\partial a}{\partial x} &= y \hspace{11em} \frac{\partial a}{\partial y} &= x \\
+					\frac{\partial b}{\partial x} &= \cos(x) \\
+					\frac{\partial f}{\partial x} &= y + \cos(x) \hspace{7em} \frac{\partial f}{\partial y} &= x \\
+					\end{aligned} \]
+				</section> -->
+
+				<section>
+					<img src="assets/computational_graph_reverse.png" style="height: auto;">
+				</section>
+
+				<section>
+					<section>
+						<h2>JVPs and VJPs</h2>
+						<p>AD literature, including the JAX documentation, often uses the terms <em>Jacobian-vector products (JVPs)</em> and <em>vector-Jacobian products (VJPs)</em>.</p>
+						<p>Say we have a function with many inputs and many outputs. The Jacobian is a matrix that contains all the partial derivatives of the outputs with respect to the inputs.</p>
+
+						
+					</section>
+
+					<section>
+						\[\begin{aligned}
+						J = \begin{bmatrix}
+						\frac{\partial f_1}{\partial x_1} & \cdots & \frac{\partial f_1}{\partial x_n} \\
+						\vdots & \ddots & \vdots \\
+						\frac{\partial f_m}{\partial x_1} & \cdots & \frac{\partial f_m}{\partial x_n}
+						\end{bmatrix}
+						\end{aligned} \]
+
+						<p>Each element of the <em>Jacobian</em> shows how sensitive output $m$ is to input $n$.</p>
+
+					</section>
+
+					<section>
+						<p>This means we can use the Jacobian as a linear map. Multiply the Jacobian by a $\delta x$ (a change in the inputs) and we can see how that change propagates to the outputs.</p>
+
+						\[\begin{aligned}
+						\delta f \approx J \delta x
+						\end{aligned} \]
+
+						This is a Jacobian-vector product (JVP) and is computed during forward mode AD.
+					</section>
+
+					<section>
+						<p>Reverse mode AD computes vector-Jacobian products (VJPs).</p>
+
+						\[\begin{aligned}
+						u^T J
+						\end{aligned} \]
+
+						<p>$u$ is some objective direction on the output (e.g. we want to maximise this output). The VJP will tell us which inputs have the most influence on that output objective.</p>
+
+					</section>
+
+
+				</section>
+
+
+				<section>
+					<h2>Computational Costs</h2>
+					<p>Where $n$ is number of inputs and $m$ number of outputs</p>
+					<table>
+						<thead>
+							<tr>
+								<th>Mode</th>
+								<th>Cost scaling</th>
+								<th>Ideal scenario</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Forward</td>
+								<td>Proportional to $n$</td>
+								<td>$n \ll m$</td>
+							</tr>
+							<tr>
+								<td>Reverse</td>
+								<td>Proportional to $m$</td>
+								<td>$m \ll n$</td>
+							</tr>
+						</tbody>
+					</table>
+				</section>
+
+				<section>
+					<p>Reverse mode is well suited to applications where there are a lot of optimisation parameters and few outputs.</p>
+					<p>Reverse mode is more memory intensive because it stores intermediate values during the forward pass, to be used in the reverse pass (if you hear reference to a <em>tape</em> in autodiff, this is what it means).</p>
+				</section>
+					
+				<section>
+					<section>
+						<h2>AD Technologies</h2>
+
+						<p>In Python, the major ML libraries are all autodiff enabled and primarily use reverse mode.</p>
+						<ul>
+							<li>JAX/diffrax</li>
+							<li>PyTorch</li>
+							<li>TensorFlow</li>
+						</ul>
+					</section>
+
+					<section>
+						<p>In Julia there are many different implementations to choose from, with different pros and cons depending on your use case.</p>
+						<ul>
+							<li>ForwardDiff</li>
+							<li>ReverseDiff</li>
+							<li>Zygote</li>
+							<li>Enzyme</li>
+							<li>Mooncake</li>
+						</ul>
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h2>Writing differentiable code</h2>
+						<p>JAX is a library designed for high performance numerical programs in Python.</p>
+						<p>To pull this off, it implements code transformations, including autodiff, and compilations, which rely on certain constraints being met in the code we write.</p>
+					</section>
+
+					<section>
+						<ul>
+							<li>Inplace updates are not allowed - but there is a workaround - use <em>arr.at[i].set(v)</em></li>
+							<li class="fragment">Out of bounds indexing - results in undefined behaviour instead of throwing an error</li>
+							<li class="fragment">Operations on lists and tuples throw a <em>TypeError</em> - because JAX's JIT and AD systems are optimised for arrays</li>
+							<li class="fragment">Dynamic shapes - operations on arrays that change shape cannot be transformed so will throw a <em>NonConcreteError</em></li>
+							<li class="fragment">For loops are heavily discouraged - again there is a workaround - use <em>jax.lax.scan</em></li>
+						</ul>
+					</section>
+
+					<section>
+						<h3>A note about JIT</h3>
+						<ul>
+							<li>Not required for performing AD but another powerful feature of JAX</li>
+							<li>Requires pure functions</li>
+							<li>Logic and control flow cannot depend on runtime values (only shape and type)</li>
+						</ul>
+					</section>
+
+					<section>
+						<h3>Pure functions</h3>
+						<p>JAX's AD system does not require <em>pure functions</em> but they are strongly recommended when writing JAX code as a whole. Functional purity means:</p>
+						<ul>
+							<li>No side effects (e.g. printing)</li>
+							<li>No reliance on global states</li>
+							<li>Avoid iterators</li>
+						</ul>
+					</section>
+
+				</section>
+
+				<section>
+					<h2>Summary</h2>
+					<ul>
+						<li>Automatic differentiation is a system for calculating accurate derivatives of programs.</li>
+						<li>AD support is widely implemented in machine learning libraries, usually with support for both forward and reverse mode.</li>
+						<li>There are some constraints to keep in mind when writing differentiable code, for example in JAX.</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Resources</h2>
+					<p>
+						<ul>
+							<li><a href="https://docs.jax.dev/en/latest/automatic-differentiation.html">JAX Documentation</a></li>
+							<li><a href="https://docs.jax.dev/en/latest/notebooks/Common_Gotchas_in_JAX.html#summary">JAX "Sharp Bits"</a></li>
+							<li><a href="https://arxiv.org/pdf/2403.14606">A comprehensive textbook</a></li>
+						</ul>
+					</p>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// MathJax4 configuration
+				mathjax4: {
+					tex: {
+						inlineMath: [['$', '$'], ['\\(', '\\)']],
+						displayMath: [['$$', '$$'], ['\\[', '\\]']],
+						macros: {
+							R: '\\mathbb{R}',
+							set: ['\\left\\{#1 \\; ; \\; #2\\right\\}', 2]
+						}
+					},
+					options: {
+						skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+					},
+					output: {
+						font: 'mathjax-stix2',
+						displayOverflow: 'linebreak',
+						linebreaks: {             // options for when overflow is linebreak
+							inline: true,              // true for browser-based breaking of inline equations
+							width: '100%',             // a fixed size or a percentage of the container width
+							lineleading: .2,           // the default lineleading in em units
+							LinebreakVisitor: null     // The LinebreakVisitor to use
+						}
+					}
+				},
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMath.MathJax4, RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js – The HTML Presentation Framework</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<section>
+					<h2>Structuring a Project</h2>
+					<p>
+						Programming Skills Workshop - 3rd March 2026
+					</p>
+				</section>
+
+				<section>
+					<h2>An interactive example</h2>
+					<p>Clone this repository: <a href="https://github.com/frohlich-lab/ProgrammingSkillsWorkshop">https://github.com/frohlich-lab/ProgrammingSkillsWorkshop</a></p>
+					<p>Explore, run the scripts, plot something...then we will discuss</p>
+				</section>
+
+				<section>
+					<h2>Overall structure</h2>
+					<ul>
+						<li>Details are a matter of personal preference but having a system is key</li>
+						<li>Example subdirectories may include: data, env, configs, results</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Managing project dependencies</h2>
+					<ul>
+						<li class="fragment">Use virtual environments (e.g., conda, venv)</li>
+						<li class="fragment">Keep versions frozen by default
+							<ul>
+								<li class="fragment">Update dependencies when required</li>
+								<li class="fragment"><em>Caveat:</em> this advice immediately changes as soon as you are writing code that others are going to use</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Building workflows</h2>
+					<ul>
+						<li class="fragment">Snakemake works - other workflow managers are available</li>
+						<li class="fragment">Designing your code to run with Docker really helps</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Tracking results</h2>
+					<ul>
+						<li class="fragment">Again details are a matter of personal preference but some general principles:</li>
+						<ul>
+							<li class="fragment">Keep a log book, why and when you tried a certain thing</li>
+							<li class="fragment">Make your git history descriptive, git is a powerful historical tool</li>
+							<li class="fragment">Record configs for your experiments e.g. through git history</li>
+						</ul>
+					</ul>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+
+				// MathJax4 configuration
+				mathjax4: {
+					tex: {
+						inlineMath: [['$', '$'], ['\\(', '\\)']],
+						displayMath: [['$$', '$$'], ['\\[', '\\]']],
+						macros: {
+							R: '\\mathbb{R}',
+							set: ['\\left\\{#1 \\; ; \\; #2\\right\\}', 2]
+						}
+					},
+					options: {
+						skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+					},
+					output: {
+						font: 'mathjax-stix2',
+						displayOverflow: 'linebreak',
+						linebreaks: {             // options for when overflow is linebreak
+							inline: true,              // true for browser-based breaking of inline equations
+							width: '100%',             // a fixed size or a percentage of the container width
+							lineleading: .2,           // the default lineleading in em units
+							LinebreakVisitor: null     // The LinebreakVisitor to use
+						}
+					}
+				},
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMath.MathJax4, RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>

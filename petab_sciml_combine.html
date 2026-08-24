@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>PEtab SciML</title>
+
+		<meta name="description" content="PEtab SciML – a data format specification for scientific machine learning parameter estimation problems">
+		<meta name="author" content="Branwen Snelling">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+
+		<style>
+			/* Placeholder boxes for figures to be generated separately */
+			.plot-placeholder {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border: 3px dashed #6272a4;
+				border-radius: 12px;
+				color: #6272a4;
+				font-style: italic;
+				height: 420px;
+				width: 80%;
+				margin: 0 auto;
+			}
+			.reveal .credit {
+				font-size: 0.5em;
+				color: #6272a4;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<!-- 1. Title -->
+				<section>
+					<h2>PEtab SciML</h2>
+					<p>A format specification for solving parameter estimation problems using scientific machine learning</p>
+					<p>
+						<small>Branwen Snelling</small>
+					</p>
+					<aside class="notes">
+						Introduce myself: computational biologist. This is a format specification, so it's relevant
+						to RSEs across domains, not just biology. The core ideas transfer to any problem where you
+						fit a differential-equation model to data.
+					</aside>
+				</section>
+
+				<!-- 2. Context -->
+				<section>
+					<section>
+						<h2>Parameter estimation in systems biology</h2>
+						<p>
+							Many biological processes are modelled by systems of mechanistic
+							<strong>ordinary differential equations (ODEs)</strong>.
+						</p>
+						<p>
+							These models contain parameters &mdash; reaction rates, binding affinities, degradation
+							constants &mdash; that are <em>unknown</em> and often <em>unmeasurable</em>.
+						</p>
+					</section>
+					<section>
+						<h3>The estimation problem</h3>
+						<p>We infer parameters by fitting the model to experimental data.</p>
+						<aside class="notes">
+							This is an optimisation problem wrapped around an ODE solve. Gradient-based optimisation
+							needs derivatives through the solver &mdash; which is why automatic differentiation matters here.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 3. Background - PEtab -->
+				<section>
+					<section>
+						<h2>The PEtab format</h2>
+						<p>
+							<a href="https://petab.readthedocs.io/en/latest/">PEtab</a> is a
+							<strong>tabular data format</strong> for specifying parameter estimation problems,
+							widely used in systems biology.
+						</p>
+						<p>
+							A problem is defined by a set of <em>.tsv</em> and <em>.yaml</em> files, making it shareable and reproducible.
+						</p>
+					</section>
+					<section>
+						<img src="assets/petab_files.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">The PEtab problem: a model plus tables for conditions, observables, measurements and parameters. Source: <a href="https://petab.readthedocs.io/en/latest/">petab.readthedocs.io</a></p>
+						<aside class="notes">
+							The model (e.g. SBML) defines the reaction network. The tables layer on the experimental
+							design, what was observed, the data itself, and the parameters with their bounds and priors.
+							Human-readable, tool-agnostic, reproducible.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 4. The missing link -->
+				<section>
+					<h2>The missing link</h2>
+					<p>Purely mechanistic models rely on us knowing the governing equations, however:</p>
+					<ul>
+						<li class="fragment">Some dynamics are hard to describe from first principles</li>
+						<li class="fragment">Models can have missing terms or interactions</li>
+						<li class="fragment">Models can contain incorrect assumptions, e.g. standard kinetics do not apply</li>
+					</ul>
+					<p class="fragment">We want to control for these uncertainties but retain <em>mechanistic insights</em></p>
+				</section>
+
+				<!-- 5. The solution - SciML -->
+				<section>
+					<section>
+						<h2>Scientific machine learning</h2>
+						<p>
+							<strong>SciML</strong> augments mechanistic ODE models with machine learning components.
+						</p>
+						<p>
+							The ODE captures the known physics/biology and neural networks learn the unknown dynamics.
+						</p>
+                        <p class="fragment">
+							But we need a standard way to <em>specify</em> these hybrid problems, which lead us to <strong>PEtab SciML</strong>.
+                        </p>
+					</section>
+				</section>
+
+				<!-- 6. PEtab SciML -->
+				<section>
+					<section>
+						<h2>PEtab SciML</h2>
+						<p>
+							An <strong>extension to PEtab</strong> for building and training scientific machine
+							learning problems.
+						</p>
+					</section>
+					<section>
+						<img src="assets/petab_sciml_files.png" style="height: 550px; width: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">PEtab SciML extends the PEtab problem with neural network definitions and hybridization tables. Source: <a href="https://petab-sciml.readthedocs.io/latest/">petab-sciml.readthedocs.io</a></p>
+						<aside class="notes">
+							Note the two new ingredients: a YAML description of the neural networks (PyTorch-exportable),
+							and mapping/hybridization tables that say where the ML elements plug into the problem.
+							Mechanistic parameters (p) and ML parameters (theta) are trained together.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 7. Sell it -->
+				<section>
+					<h2>Why a format specification?</h2>
+					<ul>
+						<li class="fragment"><strong>Reproducibility</strong>, a problem is fully defined by a
+							standard set of files, not bespoke code.</li>
+						<li class="fragment"><strong>Multi-language support</strong>, a specified problem can be
+                            imported into multiple ecosystems i.e.
+							<a href="https://amici.readthedocs.io/en/latest/">AMICI</a> (Python) or
+							<a href="https://sebapersson.github.io/PEtab.jl/stable/">PEtab.jl</a> (Julia).</li>
+						<li class="fragment"><strong>Transferable ML models</strong>, the YAML format defines the
+							neural networks and is ecosystem agnostic.</li>
+					</ul>
+				</section>
+
+				<!-- 8. Flexibility - hybridization types -->
+				<section>
+					<!-- <section>
+						<h2>Flexible hybridization</h2>
+						<p>ML elements can be inserted into the problem in several ways:</p>
+						<ul>
+							<li class="fragment"><strong>Upstream</strong> of the ODE to map high-dimensional inputs
+								(e.g. images) to model parameters</li>
+                            <li class="fragment">Define a <strong>Neural ODE</strong> where the entire
+								right-hand side is replaced with a network</li>
+                            <li class="fragment">Learn <strong>dynamic terms</strong> within the ODE</li>
+							<li class="fragment">Learn the <strong>observable formula</strong> linking model outputs to
+								observations</li>
+						</ul>
+					</section> -->
+					<section data-background="#282a36">
+						<h2>Flexible hybridization</h2>
+						<div style="display: flex; align-items: center; gap: 40px;">
+							<img src="assets/hybrid_types.png" style="height: 500px; width: auto; flex-shrink: 0;">
+							<ul style="font-size: 0.8em;">
+								<li class="fragment"><strong>Pre-initialization</strong> &mdash; map high-dimensional
+									inputs (e.g. images) to model parameters</li>
+								<li class="fragment"><strong>Simulation</strong> &mdash; learn dynamic terms within the
+									ODE, or replace the whole right-hand side (a Neural ODE)</li>
+								<li class="fragment"><strong>Observable mapping</strong> &mdash; learn the formula that
+									links model outputs to real observations</li>
+							</ul>
+						</div>
+						<p class="credit">Source: <a href="https://petab-sciml.readthedocs.io/latest/">petab-sciml.readthedocs.io</a></p>
+						<aside class="notes">
+							Walk top to bottom: content data mapped to parameters upstream; a network inside the RHS
+							during simulation; a network in the observable map; and the result compared to data during
+							fitting. The same format expresses all of these.
+
+							Observable mapping &mdash; a few ways to say it:
+							(1) The model simulates "true" quantities (e.g. concentrations), but instruments rarely
+							measure those directly. The observable formula is the translation from model state to
+							measured readout &mdash; and a neural network can learn it when that relationship is
+							unknown or nonlinear (like a calibration curve).
+							(2) It's the final layer between the mechanistic model and the data &mdash; a learned
+							readout function h(u) saying how the hidden states show up in the measurements.
+							(3) Concretely: our SIR model tracks S, I, R, T, but the reported numbers might be some
+							scaled or combined version of those states; the observable map converts model states into
+							the reported measurements.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 9. Example intro -->
+				<section>
+					<section>
+						<h2>Example: an epidemiology case study</h2>
+						<p>
+							A classic <strong>SIR</strong> model splits a population into
+							<strong>S</strong>usceptible, <strong>I</strong>nfected and
+							<strong>R</strong>ecovered compartments. This formulation also includes a
+							<strong>quarantined</strong> compartment $T$ to capture interventions.
+						</p>
+                    </section>
+					<section>
+						\[\begin{aligned}
+						\frac{dS}{dt} &= -\beta \frac{S I}{N} \\[0.3em]
+						\frac{dI}{dt} &= \beta \frac{S I}{N} - \gamma I - Q\, I \\[0.3em]
+						\frac{dR}{dt} &= \gamma I + \delta T \\[0.3em]
+						\frac{dT}{dt} &= Q\, I - \delta T
+						\end{aligned}\]
+						<p><small>
+							$S$ susceptible, $I$ infected, $R$ recovered, $T$ quarantined; $N$ total population.
+							$\beta$ is the infection rate, $\gamma$ the recovery rate, $Q$ the quarantine strength,
+							and $\delta$ the rate quarantined individuals recover.
+						</small></p>
+					</section>
+					<section>
+						<h3>The problem</h3>
+						<p>
+							The quarantine strength $Q$ changes the dynamics in a way that is hard to write down
+							mechanistically because it varies over time and by policy.
+						</p>
+						<p class="fragment">
+                            So we incorporate a neural network into the simulation to learn $Q$ from the data.
+                            This is an example of a <strong>Universal Differential Equation (UDE)</strong>.
+                        </p>
+					</section>
+                    <section>
+                        \[\begin{aligned}
+                        \frac{\mathrm{d}S}{\mathrm{d}t} &= - \frac{\beta S I}{N} \\[0.3em]
+                        \frac{\mathrm{d}I}{\mathrm{d}t} &= \frac{\beta S I}{N} - \gamma I - \mathbf{NN}_1 \cdot I \\[0.3em]
+                        \frac{\mathrm{d}R}{\mathrm{d}t} &= \gamma I + \delta T \\[0.3em]
+                        \frac{\mathrm{d}T}{\mathrm{d}t} &= \mathbf{NN}_1 \cdot I - \delta T
+                        \end{aligned}\]
+                        <p>
+                            <small>
+                                $\beta$ (infection rate) and $\gamma$ (recovery rate) are mechanistic parameters;
+                                and the outputs from $\mathbf{NN}_1$ represent $Q$, the quarantine strength. All are trained together against the data.
+                            </small>
+                        </p>
+                        <aside class="notes">
+                            The $\mathrm{NN}_1$ term is the learned quarantine strength. Mechanistically we only commit to "some
+                            fraction of the infected are removed from circulation over time" and let the network discover
+                            its shape.
+                        </aside>
+                    </section>
+				</section>
+
+				<!-- 10. Implementing the UDE in PEtab SciML -->
+				<section>
+					<section>
+						<h2>Building the problem in PEtab SciML</h2>
+						<!-- Show PEtab SciML file schematic again? -->
+					</section>
+				</section>
+
+				<!-- 11. Raw data plot (placeholder) -->
+				<section>
+					<h2>The data</h2>
+					<img src="assets/raw_data_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+					<p class="credit">Observed infected and recovered counts, split into training and validation. Data: <a href="https://doi.org/10.1016/j.patter.2020.100145">Dandekar et al., Patterns 2020</a></p>
+					<aside class="notes">
+						Raw infected/recovered case data over time, split into a training window and a held-out
+						validation window.
+					</aside>
+				</section>
+
+				<!-- 12. Trained model results plot (placeholder) -->
+				<section>
+					<h2>Trained model</h2>
+					<img src="assets/model_vs_data_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+					<p class="credit">Trained UDE (open markers) against the data (filled markers), on both training and validation windows. Trained with <a href="https://amici.readthedocs.io/en/latest/">AMICI</a>.</p>
+					<aside class="notes">
+						The trained UDE reproduces the training data and generalises to the held-out validation window.
+					</aside>
+				</section>
+
+				<!-- 13. Summary -->
+				<section>
+					<h2>Summary</h2>
+					<ul>
+                        <li><strong>PEtab SciML</strong> is a language-agnostic format for specifying and training hybrid models</li>
+						<li>It facilitates solving parameter estimation problems, which are central to systems biology and other fields</li>
+						<li>The format supports flexible hybridization, multiple languages, and a transferable ML model format improving reproducibility</li>
+					</ul>
+				</section>
+
+				<!-- 14. References -->
+				<section>
+					<h2>References</h2>
+					<ul>
+						<li><a href="https://petab-sciml.readthedocs.io/latest/introduction.html">PEtab SciML</a> &mdash; the format specification</li>
+						<li><a href="https://petab.readthedocs.io/en/latest/">PEtab</a> &mdash; the base tabular format</li>
+						<li><a href="https://amici.readthedocs.io/en/latest/">AMICI</a> &mdash; Python simulation &amp; training</li>
+						<li><a href="https://sebapersson.github.io/PEtab.jl/stable/">PEtab.jl</a> &mdash; Julia simulation &amp; training</li>
+					</ul>
+				</section>
+
+				<!-- 15. Acknowledgements -->
+				<section>
+					<h2>Acknowledgements</h2>
+					<div style="display: flex; justify-content: center; gap: 60px; font-size: 0.55em;">
+						<div>
+							<h3 style="margin-bottom: 0; font-size: 1.2em;">The Fr&ouml;hlich Lab</h3>
+							<p style="margin: 0 0 0.3em; color: #6272a4;">The Francis Crick Institute</p>
+							<ul style="display: inline-block; text-align: left; margin: 0;">
+                                <li>Fabian Fr&ouml;hlich</li>
+                                <li>Yoana Arroyo Berdugo</li>
+                                <li>Tamara Hodgetts</li>
+								<li>Sebastian Persson</li>
+                                <li>Theo de Pomereu</li>
+                                <li>Marta Sadlej</li>
+                                <li>Asami Yasumoto-Rouhiainen</li>
+                                <li>Jana Zah</li>
+							</ul>
+						</div>
+						<div>
+							<h3 style="margin-bottom: 0; font-size: 1.2em;">The Hasenauer Lab</h3>
+							<p style="margin: 0 0 0.3em; color: #6272a4;">University of Bonn</p>
+							<ul style="display: inline-block; text-align: left; margin: 0;">
+								<li>Dilan Pathirana</li>
+								<li>Maren Philipps</li>
+								<li>Daniel Weindl</li>
+							</ul>
+						</div>
+					</div>
+					<img src="assets/lab.jpg" style="width: 48%; height: auto; border-radius: 8px; margin-top: 15px;">
+					<aside class="notes">
+						Add funding acknowledgements if needed.
+					</aside>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+				slideNumber: 'c/t',
+
+				// MathJax4 configuration
+				mathjax4: {
+					tex: {
+						inlineMath: [['$', '$'], ['\\(', '\\)']],
+						displayMath: [['$$', '$$'], ['\\[', '\\]']],
+						macros: {
+							R: '\\mathbb{R}',
+							set: ['\\left\\{#1 \\; ; \\; #2\\right\\}', 2]
+						}
+					},
+					options: {
+						skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+					},
+					output: {
+						font: 'mathjax-stix2',
+						displayOverflow: 'linebreak',
+						linebreaks: {             // options for when overflow is linebreak
+							inline: true,              // true for browser-based breaking of inline equations
+							width: '100%',             // a fixed size or a percentage of the container width
+							lineleading: .2,           // the default lineleading in em units
+							LinebreakVisitor: null     // The LinebreakVisitor to use
+						}
+					}
+				},
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMath.MathJax4, RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>
