@@ -65,25 +65,15 @@
 
 				<!-- 2. Context -->
 				<section>
-					<section>
-						<h2>Parameter estimation in systems biology</h2>
-						<p>
-							Many biological processes are modelled by systems of mechanistic
-							<strong>ordinary differential equations (ODEs)</strong>.
-						</p>
-						<p>
-							These models contain parameters &mdash; reaction rates, binding affinities, degradation
-							constants &mdash; that are <em>unknown</em> and often <em>unmeasurable</em>.
-						</p>
-					</section>
-					<section>
-						<h3>The estimation problem</h3>
-						<p>We infer parameters by fitting the model to experimental data.</p>
-						<aside class="notes">
-							This is an optimisation problem wrapped around an ODE solve. Gradient-based optimisation
-							needs derivatives through the solver &mdash; which is why automatic differentiation matters here.
-						</aside>
-					</section>
+					<h2>Parameter estimation in systems biology</h2>
+					<p>
+						Many biological processes are modelled by systems of mechanistic
+						<strong>ordinary differential equations (ODEs)</strong>.
+					</p>
+					<p>
+						These models contain parameters &mdash; reaction rates, binding affinities, degradation
+						constants &mdash; that are <em>unknown</em> and often <em>unmeasurable</em>.
+					</p>
 				</section>
 
 				<!-- 3. Background - PEtab -->
@@ -277,18 +267,10 @@
                     </section>
 				</section>
 
-				<!-- 10. Implementing the UDE in PEtab SciML -->
-				<section>
-					<section>
-						<h2>Building the problem in PEtab SciML</h2>
-						<!-- Show PEtab SciML file schematic again? -->
-					</section>
-				</section>
-
 				<!-- 11. Raw data plot (placeholder) -->
 				<section>
 					<h2>The data</h2>
-					<img src="assets/raw_data_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+					<img src="assets/measurements_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
 					<p class="credit">Observed infected and recovered counts, split into training and validation. Data: <a href="https://doi.org/10.1016/j.patter.2020.100145">Dandekar et al., Patterns 2020</a></p>
 					<aside class="notes">
 						Raw infected/recovered case data over time, split into a training window and a held-out
@@ -298,12 +280,17 @@
 
 				<!-- 12. Trained model results plot (placeholder) -->
 				<section>
-					<h2>Trained model</h2>
-					<img src="assets/model_vs_data_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
-					<p class="credit">Trained UDE (open markers) against the data (filled markers), on both training and validation windows. Trained with <a href="https://amici.readthedocs.io/en/latest/">AMICI</a>.</p>
-					<aside class="notes">
-						The trained UDE reproduces the training data and generalises to the held-out validation window.
-					</aside>
+					<section>
+						<h2>Training window</h2>
+						<img src="assets/raw_data_and_amici_training_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">Trained UDE against the data on the training window. Trained with <a href="https://amici.readthedocs.io/en/latest/">AMICI</a>.</p>
+					</section>
+
+					<section>
+						<h2>Validation window</h2>
+						<img src="assets/raw_data_and_amici_validation_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">Trained UDE against the data on the validation window. Trained with <a href="https://amici.readthedocs.io/en/latest/">AMICI</a>.</p>
+					</section>
 				</section>
 
 				<!-- 13. Summary -->
