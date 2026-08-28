@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>PEtab SciML</title>
+
+		<meta name="description" content="PEtab SciML – a data format specification for scientific machine learning parameter estimation problems">
+		<meta name="author" content="Branwen Snelling">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/dracula.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+
+		<style>
+			/* Placeholder boxes for figures to be generated separately */
+			.plot-placeholder {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border: 3px dashed #6272a4;
+				border-radius: 12px;
+				color: #6272a4;
+				font-style: italic;
+				height: 420px;
+				width: 80%;
+				margin: 0 auto;
+			}
+			.reveal .credit {
+				font-size: 0.5em;
+				color: #6272a4;
+			}
+			/* Code blocks used for the PEtab SciML file walkthrough */
+			.reveal pre.petab-code {
+				width: 92%;
+				margin: 0 auto;
+				box-shadow: none;
+			}
+			.reveal pre.petab-code code {
+				font-size: 0.65em;
+				line-height: 1.25;
+				max-height: 520px;
+			}
+			/* Simple TSV-style tables rendered as monospace blocks */
+			.reveal table.petab-table {
+				font-size: 0.65em;
+				font-family: monospace;
+				margin: 0 auto;
+				border-collapse: collapse;
+			}
+			.reveal table.petab-table th,
+			.reveal table.petab-table td {
+				border: 1px solid #6272a4;
+				padding: 6px 14px;
+				text-align: left;
+			}
+			.reveal table.petab-table th {
+				color: #ff79c6;
+			}
+			/* Boxes for the neural network / array-file schematic */
+			.nn-box {
+				border: 2px solid #6272a4;
+				border-radius: 10px;
+				padding: 10px 16px;
+				font-size: 0.6em;
+			}
+			.nn-box h4 {
+				margin: 0 0 6px;
+				font-size: 1.1em;
+				color: #ff79c6;
+				text-transform: none;
+			}
+			/* Left-to-right network architecture flow */
+			.nn-flow {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 8px;
+				width: 100%;
+				margin-top: 20px;
+			}
+			.nn-flow .nn-stage {
+				text-align: center;
+				flex: 1 1 0;
+				padding: 12px 8px;
+			}
+			.nn-flow .nn-stage p {
+				margin: 4px 0;
+				line-height: 1.3;
+			}
+			.nn-flow .nn-arrow {
+				color: #6272a4;
+				font-size: 1.4em;
+				flex: 0 0 auto;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<!-- 1. Title -->
+				<section>
+					<h2>PEtab SciML</h2>
+					<p>A format specification for solving parameter estimation problems using scientific machine learning</p>
+					<p>
+						<small><em>Branwen Snelling &mdash; RSECon 2026</em></small>
+					</p>
+				</section>
+
+				<!-- 2. Context -->
+				<section>
+					<section>
+						<h2>Parameter estimation in computational biology</h2>
+						<p>
+							Many biological processes are modelled by systems of mechanistic
+							<strong>ordinary differential equations (ODEs)</strong>.
+						</p>
+						<p>
+							For example predator-prey dynamics, epidemic spread, and cell signalling.
+						</p>
+					</section>
+
+					<section>
+						<h3>The estimation problem</h3>
+						<p>
+							These models contain parameters &mdash; reaction rates, binding affinities, degradation
+							constants &mdash; that are <em>unknown</em> and often <em>unmeasurable</em>.
+						</p>
+						<p>
+							We can estimate these unknown parameters by fitting the model to experimental data.
+						</p>
+						<!-- <p>
+							To do so we need to repeatedly evaluate the model and optimise to find the best
+							fitting parameters, accounting additionally for expected bounds and priors.
+						</p> -->
+					</section>
+				</section>
+
+				<!-- 3. Background - PEtab -->
+				<section>
+					<section>
+						<h2>The PEtab format</h2>
+						<p>
+							<a href="https://petab.readthedocs.io/en/latest/">PEtab</a> is a
+							<strong>tabular data format</strong> for specifying parameter estimation problems,
+							widely used in computational biology.
+						</p>
+						<p>
+							A problem is defined by a set of <em>.tsv</em> and <em>.yaml</em> files, making it shareable and reproducible.
+						</p>
+					</section>
+					<section>
+						<img src="assets/petab_files.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">The PEtab problem: a model plus tables for conditions, observables, measurements and parameters. Source: <a href="https://petab.readthedocs.io/en/latest/">petab.readthedocs.io</a></p>
+						<aside class="notes">
+							The model (e.g. SBML) defines the reaction network. The tables layer on the experimental
+							design, what was observed, the data itself, and the parameters with their bounds and priors.
+							Human-readable, tool-agnostic, reproducible.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 4. The missing link -->
+				<section>
+					<h2>The missing link</h2>
+					<p>Purely mechanistic models rely on us knowing the governing equations, however:</p>
+					<ul>
+						<li class="fragment">Some dynamics are hard to describe from first principles</li>
+						<li class="fragment">Models can have missing terms or interactions</li>
+						<li class="fragment">Models can contain incorrect assumptions, e.g. standard kinetics do not apply</li>
+					</ul>
+					<p class="fragment">We want to control for these uncertainties but retain <em>mechanistic insights</em></p>
+				</section>
+
+				<!-- 5. The solution - SciML -->
+				<section>
+					<section>
+						<h2>Scientific machine learning</h2>
+						<p>
+							<strong>SciML</strong> augments mechanistic ODE models with machine learning components.
+						</p>
+						<p>
+							The ODE captures the known physics/biology and neural networks learn the unknown dynamics.
+						</p>
+                        <p class="fragment">
+							But we need a standard way to <em>specify</em> these hybrid problems, which lead us to <strong>PEtab SciML</strong>.
+                        </p>
+					</section>
+				</section>
+
+				<!-- 6. PEtab SciML -->
+				<section>
+					<section>
+						<h2>PEtab SciML</h2>
+						<p>
+							An <strong>extension to PEtab</strong> for building and training scientific machine
+							learning problems.
+						</p>
+					</section>
+					<section>
+						<img src="assets/petab_sciml_files.png" style="height: 550px; width: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">PEtab SciML extends the PEtab problem with neural network definitions and hybridization tables. Source: <a href="https://petab-sciml.readthedocs.io/latest/">petab-sciml.readthedocs.io</a></p>
+					</section>
+				</section>
+
+				<!-- 7. Sell it -->
+				<section>
+					<h2>Why a format specification?</h2>
+					<ul>
+						<li class="fragment"><strong>Reproducibility</strong>, a problem is fully defined by a
+							standard set of files, not bespoke code.</li>
+						<li class="fragment"><strong>Multi-language support</strong>, a specified problem can be
+                            imported into multiple ecosystems i.e.
+							<a href="https://amici.readthedocs.io/en/latest/">AMICI</a> (Python) or
+							<a href="https://sebapersson.github.io/PEtab.jl/stable/">PEtab.jl</a> (Julia).</li>
+						<li class="fragment"><strong>Transferable ML models</strong>, the YAML format defines the
+							neural networks and is ecosystem agnostic.</li>
+					</ul>
+				</section>
+
+				<!-- 8. Flexibility - hybridization types -->
+				<section>
+					<section data-background="#282a36">
+						<h2>Flexible hybridization</h2>
+						<div style="display: flex; align-items: center; gap: 40px;">
+							<img src="assets/hybrid_types.png" style="height: 500px; width: auto; flex-shrink: 0;">
+							<ul style="font-size: 0.8em;">
+								<li class="fragment"><strong>Pre-initialization</strong> &mdash; map high-dimensional
+									inputs (e.g. images) to model parameters</li>
+								<li class="fragment"><strong>Simulation</strong> &mdash; learn dynamic terms within the
+									ODE, or replace the whole right-hand side (a Neural ODE)</li>
+								<li class="fragment"><strong>Observable mapping</strong> &mdash; learn the formula that
+									links model outputs to real observations</li>
+							</ul>
+						</div>
+						<p class="credit">Source: <a href="https://petab-sciml.readthedocs.io/latest/">petab-sciml.readthedocs.io</a></p>
+					</section>
+				</section>
+
+				<!-- 9. Example intro -->
+				<section>
+					<section>
+						<h2>Example: an epidemiology case study</h2>
+						<p>
+							A classic <strong>SIR</strong> model splits a population into
+							<strong>S</strong>usceptible, <strong>I</strong>nfected and
+							<strong>R</strong>ecovered compartments. This formulation also includes a
+							<strong>quarantined</strong> compartment $T$ to capture interventions.
+						</p>
+                    </section>
+					<section>
+						\[\begin{aligned}
+						\frac{dS}{dt} &= -\beta \frac{S I}{N} \\[0.3em]
+						\frac{dI}{dt} &= \beta \frac{S I}{N} - \gamma I - Q\, I \\[0.3em]
+						\frac{dR}{dt} &= \gamma I + \delta T \\[0.3em]
+						\frac{dT}{dt} &= Q\, I - \delta T
+						\end{aligned}\]
+						<p><small>
+							$S$ susceptible, $I$ infected, $R$ recovered, $T$ quarantined; $N$ total population.
+							$\beta$ is the infection rate, $\gamma$ the recovery rate, $Q$ the quarantine strength,
+							and $\delta$ the rate quarantined individuals recover.
+						</small></p>
+					</section>
+					<section>
+						<h2>The data</h2>
+						<img src="assets/measurements_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">Observed infected and recovered counts, split into training and validation. Data: <a href="https://doi.org/10.1016/j.patter.2020.100145">Dandekar et al., Patterns 2020</a></p>
+						<aside class="notes">
+							Raw infected/recovered case data over time, split into a training window and a held-out
+							validation window.
+						</aside>
+					</section>
+					<section>
+						<h3>The problem</h3>
+						<p>
+							The quarantine strength $Q$ changes the dynamics in a way that is hard to write down
+							mechanistically because it varies over time and by policy.
+						</p>
+						<p class="fragment">
+                            So we incorporate a neural network into the simulation to learn $Q$ from the data.
+                            This is an example of a <strong>Universal Differential Equation (UDE)</strong>.
+                        </p>
+					</section>
+                    <section>
+                        \[\begin{aligned}
+                        \frac{\mathrm{d}S}{\mathrm{d}t} &= - \frac{\beta S I}{N} \\[0.3em]
+                        \frac{\mathrm{d}I}{\mathrm{d}t} &= \frac{\beta S I}{N} - \gamma I - \mathbf{NN}_1 \cdot I \\[0.3em]
+                        \frac{\mathrm{d}R}{\mathrm{d}t} &= \gamma I + \delta T \\[0.3em]
+                        \frac{\mathrm{d}T}{\mathrm{d}t} &= \mathbf{NN}_1 \cdot I - \delta T
+                        \end{aligned}\]
+                        <p>
+                            <small>
+                                $\beta$ (infection rate) and $\gamma$ (recovery rate) are mechanistic parameters;
+                                and the outputs from $\mathbf{NN}_1$ represent $Q$, the quarantine strength. All are trained together against the data.
+                            </small>
+                        </p>
+                    </section>
+				</section>
+
+				<!-- 10. Implementing the problem in PEtab SciML -->
+				<section>
+					<section>
+						<h2>Implementing this in PEtab SciML</h2>
+						<p>The hybrid problem is described by a handful of files:</p>
+						<ul style="font-size: 0.85em;">
+							<li class="fragment">the <strong>SBML model</strong> defines the ODEs</li>
+							<li class="fragment">the <strong>hybridization table</strong> defines how the network plugs into the model</li>
+							<li class="fragment">the <strong>network YAML</strong> encodes the network architecture</li>
+							<li class="fragment">the <strong>array files</strong> provide initial parameters and input data</li>
+						</ul>
+					</section>
+
+					<!-- 10a. The mechanistic model in Antimony -->
+					<section>
+						<h3>1. The mechanistic model</h3>
+						<pre class="petab-code"><code data-trim data-noescape class="plaintext">
+model sir_quarantine
+    # compartment and species (amounts in persons)
+    compartment population = 1;
+    species S in population, I in population, R in population, T in population;
+
+    # total population
+    N := S + I + R + T;
+
+    # mechanistic parameters (units per day)
+    const beta, gamma_, delta, quarantine_rate;
+
+    # reactions
+    infection:  S -> I;  beta * S * I / N;
+    recovery:   I -> R;  gamma_ * I;
+    quarantine: I -> T;  quarantine_rate * I;
+    release:    T -> R;  delta * T;
+end
+						</code></pre>
+						<p class="credit">
+							Written in <a href="https://tellurium.readthedocs.io/en/latest/antimony.html">Antimony</a>,
+							a human-readable modelling language that <strong>exports directly to SBML</strong> &mdash;
+							the model format PEtab expects.
+						</p>
+					</section>
+
+					<!-- 10b. Hybridization table -->
+					<section>
+						<h3>2. The hybridization table</h3>
+						<p style="font-size: 0.75em;">Defines how network inputs and outputs feed in to the model.</p>
+						<pre class="petab-code"><code data-trim data-noescape class="plaintext">
+targetId          targetValue
+net1_input1       S/N
+net1_input2       I/N
+net1_input3       R/N
+quarantine_rate   net1_output1
+						</code></pre>
+						<p style="font-size: 0.7em;">
+							Read it as assignment: <em>targetId</em> <code>&larr;</code> <em>targetValue</em>.
+						</p>
+					</section>
+
+					<!-- 10c. Network architecture -->
+					<section>
+						<h3>3. The network architecture</h3>
+						<div class="nn-flow">
+							<div class="nn-box nn-stage">
+								<h4>input</h4>
+								<p><strong>3</strong><br>S/N, I/N, R/N</p>
+							</div>
+							<span class="nn-arrow">&rarr;</span>
+							<div class="nn-box nn-stage">
+								<h4>Linear</h4>
+								<p>3 &rarr; 10</p>
+							</div>
+							<span class="nn-arrow">&rarr;</span>
+							<div class="nn-box nn-stage">
+								<h4>SiLU</h4>
+								<p>activation</p>
+							</div>
+							<span class="nn-arrow">&rarr;</span>
+							<div class="nn-box nn-stage">
+								<h4>Linear</h4>
+								<p>10 &rarr; 1</p>
+							</div>
+							<span class="nn-arrow">&rarr;</span>
+							<div class="nn-box nn-stage">
+								<h4>output</h4>
+								<p><strong>1</strong><br>quarantine rate</p>
+							</div>
+						</div>
+						<ul style="font-size: 0.7em; text-align: left; width: 90%; margin: 24px auto 0;">
+							<li class="fragment">A YAML file per network, declaring <strong>layers</strong>
+								(type + arguments) and a <strong>forward</strong> graph</li>
+							<li class="fragment">It is <strong>ecosystem agnostic</strong>, meaning the same file
+								can be used to construct a PyTorch module in Python or a Lux network in Julia</li>
+						</ul>
+					</section>
+
+					<!-- 10e. Array files -->
+					<section>
+						<h3>4. The array files</h3>
+						<p style="font-size: 0.75em;">
+							Anything genuinely array-shaped lives outside the tables, in HDF5.
+						</p>
+						<div style="display: flex; justify-content: center; gap: 30px; margin-top: 10px;">
+							<div class="nn-box" style="text-align: left; width: 40%;">
+								<h4>Parameter arrays</h4>
+								<ul style="margin: 0; padding-left: 1.1em;">
+									<li>Set the initial weights and biases per layer</li>
+									<li>Also how a <strong>trained</strong> network is stored and shared</li>
+								</ul>
+							</div>
+							<div class="nn-box" style="text-align: left; width: 40%;">
+								<h4>Input arrays</h4>
+								<ul style="margin: 0; padding-left: 1.1em;">
+									<li>For high dimensional inputs e.g. images, proteomics</li>
+									<li><em>Not used in this example as inputs come from the ODE state</em></li>
+								</ul>
+							</div>
+						</div>
+						<p class="fragment" style="font-size: 0.7em; margin-top: 18px;">
+							Together with the standard PEtab tables (conditions, observables, measurements,
+							parameters, mappings), these files <strong>fully define</strong> the training problem.
+						</p>
+					</section>
+				</section>
+
+				<!-- 11. Training the model -->
+				<section>
+					<section>
+						<h2>Training the model</h2>
+						<ol style="font-size: 0.8em;">
+							<li class="fragment"><strong>Import</strong> the PEtab SciML problem
+								(<a href="https://amici.readthedocs.io/en/latest/">AMICI</a> in Python,
+								<a href="https://sebapersson.github.io/PEtab.jl/stable/">PEtab.jl</a> in Julia)</li>
+							<li class="fragment"><strong>Define a loss function</strong> e.g. the negative log-likelihood of
+								the data given the parameters</li>
+							<li class="fragment"><strong>Implement a training loop</strong> which jointly trains the network and mechanistic parameters</li>
+						</ol>
+						<p class="fragment" style="font-size: 0.75em;">
+							The importers generate differentiable model code, which makes training possible.
+						</p>
+					</section>
+
+					<!-- 11a. Import -->
+					<section data-visibility="uncounted">
+						<h3>1. Import the problem</h3>
+						<pre class="petab-code"><code data-trim data-noescape class="python">
+from petab import v2
+from amici.importers.petab import PetabImporter
+
+# Read the PEtab problem from files
+petab_problem = v2.Problem.from_yaml("problem.yaml")
+
+# Import the problem into AMICI
+pi = PetabImporter(petab_problem=petab_problem, compile_=True, jax=True)
+
+# Generate differentiable model code and wrap it in a simulator object
+jax_problem = pi.create_simulator(force_import=True)
+						</code></pre>
+					</section>
+
+					<!-- 11b. Loss -->
+					<section data-visibility="uncounted">
+						<h3>2. Define the loss</h3>
+						<pre class="petab-code"><code data-trim data-noescape class="python">
+def loss_fn(problem):
+    llh, aux = run_simulations(problem)
+    return -llh, aux
+
+loss_and_grad = eqx.filter_value_and_grad(loss_fn, has_aux=True)
+						</code></pre>
+					</section>
+
+					<!-- 11c. Train -->
+					<section data-visibility="uncounted">
+						<h3>3. Training loop</h3>
+						<pre class="petab-code"><code data-trim data-noescape class="python">
+optimizer = optax.adam(3e-3)
+opt_state = optimizer.init(eqx.filter(jax_train, eqx.is_inexact_array))
+
+@eqx.filter_jit
+def train_step(problem, opt_state):
+    (nllh, _), grads = loss_and_grad(problem)
+    updates, opt_state = optimizer.update(grads, opt_state)
+    problem = eqx.apply_updates(problem, updates)
+    return nllh, problem, opt_state
+						</code></pre>
+					</section>
+
+				</section>
+
+				<!-- 12. Trained model results plot-->
+				<section>
+					<section>
+						<h2>Training window</h2>
+						<img src="assets/raw_data_and_amici_training_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">Trained UDE against the data on the training window. Trained with <a href="https://amici.readthedocs.io/en/latest/">AMICI</a>.</p>
+					</section>
+
+					<section>
+						<h2>Validation window</h2>
+						<img src="assets/raw_data_and_amici_validation_Dandekar_Patterns2020.png" style="width: 90%; height: auto; background: white; padding: 12px; border-radius: 8px;">
+						<p class="credit">Trained UDE against the data on the validation window. Trained with <a href="https://amici.readthedocs.io/en/latest/">AMICI</a>.</p>
+					</section>
+				</section>
+
+				<!-- 13. Summary -->
+				<section>
+					<h2>Summary</h2>
+					<ul>
+                        <li><strong>PEtab SciML</strong> is a language-agnostic format for specifying and training hybrid models</li>
+						<li>It facilitates solving parameter estimation problems, which are central to computational biology and other fields</li>
+						<li>The format supports flexible hybridization, multiple languages, and a transferable ML model format improving reproducibility</li>
+					</ul>
+				</section>
+
+				<!-- 14. References -->
+				<section>
+					<h2>References</h2>
+					<ul>
+						<li><a href="https://petab-sciml.readthedocs.io/latest/introduction.html">PEtab SciML</a> &mdash; the format specification</li>
+						<li><a href="https://petab.readthedocs.io/en/latest/">PEtab</a> &mdash; the base tabular format</li>
+						<li><a href="https://amici.readthedocs.io/en/latest/">AMICI</a> &mdash; Python simulation &amp; training</li>
+						<li><a href="https://sebapersson.github.io/PEtab.jl/stable/">PEtab.jl</a> &mdash; Julia simulation &amp; training</li>
+					</ul>
+				</section>
+
+				<!-- 15. Acknowledgements -->
+				<section>
+					<h2>Acknowledgements</h2>
+					<div style="display: flex; justify-content: center; gap: 60px; font-size: 0.55em;">
+						<div>
+							<h3 style="margin-bottom: 0; font-size: 1.2em;">The Fr&ouml;hlich Lab</h3>
+							<p style="margin: 0 0 0.3em; color: #6272a4;">The Francis Crick Institute</p>
+							<ul style="display: inline-block; text-align: left; margin: 0;">
+                                <li>Fabian Fr&ouml;hlich</li>
+                                <li>Yoana Arroyo Berdugo</li>
+                                <li>Tamara Hodgetts</li>
+								<li>Sebastian Persson</li>
+                                <li>Theo de Pomereu</li>
+                                <li>Marta Sadlej</li>
+                                <li>Asami Yasumoto-Rouhiainen</li>
+                                <li>Jana Zah</li>
+							</ul>
+						</div>
+						<div>
+							<h3 style="margin-bottom: 0; font-size: 1.2em;">The Hasenauer Lab</h3>
+							<p style="margin: 0 0 0.3em; color: #6272a4;">University of Bonn</p>
+							<ul style="display: inline-block; text-align: left; margin: 0;">
+								<li>Dilan Pathirana</li>
+								<li>Maren Philipps</li>
+								<li>Daniel Weindl</li>
+							</ul>
+						</div>
+					</div>
+					<img src="assets/lab.jpg" style="width: 48%; height: auto; border-radius: 8px; margin-top: 15px;">
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				controlsTutorial: false,
+				progress: true,
+				center: true,
+				hash: true,
+				slideNumber: 'c/t',
+
+				// MathJax4 configuration
+				mathjax4: {
+					tex: {
+						inlineMath: [['$', '$'], ['\\(', '\\)']],
+						displayMath: [['$$', '$$'], ['\\[', '\\]']],
+						macros: {
+							R: '\\mathbb{R}',
+							set: ['\\left\\{#1 \\; ; \\; #2\\right\\}', 2]
+						}
+					},
+					options: {
+						skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+					},
+					output: {
+						font: 'mathjax-stix2',
+						displayOverflow: 'linebreak',
+						linebreaks: {             // options for when overflow is linebreak
+							inline: true,              // true for browser-based breaking of inline equations
+							width: '100%',             // a fixed size or a percentage of the container width
+							lineleading: .2,           // the default lineleading in em units
+							LinebreakVisitor: null     // The LinebreakVisitor to use
+						}
+					}
+				},
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMath.MathJax4, RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>
