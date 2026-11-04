@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Green Computing</title>
+
+		<meta name="description" content="A practical introduction to green computing for researchers who use HPC systems">
+		<meta name="author" content="Branwen Snelling">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/green.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+
+		<style>
+			/* Placeholder boxes for figures to be generated separately */
+			.plot-placeholder {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				border: 3px dashed var(--g-border-color);
+				border-radius: 12px;
+				color: var(--g-muted-color);
+				font-style: italic;
+				font-size: 0.6em;
+				padding: 0 30px;
+				height: 380px;
+				width: 80%;
+				margin: 0 auto;
+				box-sizing: border-box;
+			}
+			.plot-placeholder.small {
+				height: 260px;
+			}
+			.reveal .credit {
+				font-size: 0.5em;
+				color: var(--g-muted-color);
+			}
+			/* Code blocks for Slurm examples */
+			.reveal pre.hpc-code {
+				width: 80%;
+				margin: 0 auto;
+				box-shadow: none;
+			}
+			.reveal pre.hpc-code code {
+				font-size: 0.75em;
+				line-height: 1.3;
+			}
+			/* Boxes for side-by-side concepts */
+			.concept-box {
+				border: 2px solid var(--g-border-color);
+				border-radius: 10px;
+				padding: 10px 16px;
+				font-size: 0.6em;
+				text-align: left;
+			}
+			.concept-box h4 {
+				margin: 0 0 6px;
+				font-size: 1.1em;
+				color: var(--g-accent-color);
+				text-transform: none;
+			}
+			.concept-box ul {
+				margin: 0;
+				padding-left: 1.1em;
+			}
+			.concept-row {
+				display: flex;
+				justify-content: center;
+				gap: 30px;
+				margin-top: 10px;
+			}
+			/* Legend for charts exported without one */
+			.reveal .chart-legend {
+				font-size: 0.4em;
+				color: var(--g-muted-color);
+				margin: 6px 0 0;
+				line-height: 1.6;
+			}
+			.reveal .chart-legend span {
+				white-space: nowrap;
+				margin-left: 10px;
+			}
+			.reveal .chart-legend i {
+				display: inline-block;
+				width: 0.9em;
+				height: 0.9em;
+				margin-right: 4px;
+				vertical-align: middle;
+				border-radius: 2px;
+				/* keeps pale swatches visible on the light background */
+				box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+			}
+			/* Big headline numbers on the motivation slides */
+			.big-number {
+				font-size: 2.2em;
+				font-weight: bold;
+				color: var(--g-accent-color);
+				margin: 0.2em 0;
+			}
+			/* Left-to-right project lifecycle flow */
+			.flow {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 8px;
+				width: 100%;
+				margin-top: 20px;
+			}
+			.flow .stage {
+				text-align: center;
+				flex: 1 1 0;
+				padding: 12px 8px;
+			}
+			.flow .stage p {
+				margin: 4px 0;
+				line-height: 1.3;
+			}
+			.flow .arrow {
+				color: var(--g-muted-color);
+				font-size: 1.4em;
+				flex: 0 0 auto;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+				<!-- 1. Title -->
+				<section>
+					<h2>Green Computing</h2>
+					<p>A gentle introduction for researchers</p>
+					<p>
+						<small><em>Branwen Snelling &mdash; The Francis Crick Institute</em></small>
+					</p>
+				</section>
+
+				<!-- 2. Motivation -->
+				<section>
+					<section>
+						<h2>Why green computing?</h2>
+						<p>
+							Computing is now central to almost every area of research and it is
+							<strong>energy intensive</strong>.
+						</p>
+						<ul>
+							<li class="fragment">Simulations, parameter estimation and model training can run for thousands of CPU/GPU hours</li>
+							<li class="fragment">Computation and data storage draw power</li>
+							<li class="fragment">The environmental cost is real, but usually invisible to the person submitting the job</li>
+						</ul>
+					</section>
+
+					<section>
+						<p>The carbon footprint of a scientist is estimated to be</p>
+						<p class="big-number">4 &ndash; 25 t CO<sub>2</sub>e</p>
+						<p>per scientist, per year</p>
+						<p>
+							compared with the <strong>&lt; 2 t CO<sub>2</sub>e</strong> per person per year
+							budget consistent with the IPCC's targets
+						</p>
+						<p class="credit">
+							<a href="https://www.nature.com/articles/s43586-023-00202-5">Lannelongue et al., Nature Reviews Methods Primers 2023</a>
+						</p>
+						<aside class="notes">
+							Computing is a significant and growing share of this, alongside travel and lab consumables.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Data centres are energy hungry</h3>
+						<div class="concept-row" style="align-items: center;">
+							<div style="width: 40%;">
+								<p class="big-number">~1.5%</p>
+								<p style="font-size: 0.7em;">of global electricity consumption</p>
+								<p style="font-size: 0.7em;">
+									set to <strong>more than double by 2030</strong>, driven largely by demand from AI
+								</p>
+							</div>
+							<div style="width: 42%;">
+								<img src="assets/data-centre-electricity-consumption-by-region-base-case-2020-2030.png" style="width: 100%; height: auto; margin: 0; background: white; padding: 12px; border-radius: 8px;">
+								<!-- The exported PNG has no legend or units, so they are added here -->
+								<p class="chart-legend">
+									TWh, stacked:
+									<span><i style="background: #75dafc;"></i>United States</span>
+									<span><i style="background: #6c9bdb;"></i>China</span>
+									<span><i style="background: #8ff2ab;"></i>Europe</span>
+									<span><i style="background: #3dbfb3;"></i>Asia excluding China</span>
+									<span><i style="background: #fff480;"></i>Rest of world</span>
+								</p>
+							</div>
+						</div>
+						<p class="credit">
+							IEA (2025), <a href="https://www.iea.org/data-and-statistics/charts/data-centre-electricity-consumption-by-region-base-case-2020-2030">Data centre electricity consumption by region, Base Case, 2020&ndash;2030</a>,
+							IEA, Paris. Licence: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+						</p>
+						<aside class="notes">
+							Total roughly 415 TWh in 2024 rising to ~945 TWh by 2030. The US and China account for most of
+							the growth; Europe's share is also rising.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 3. Key concept: operational vs embodied -->
+				<section>
+					<section>
+						<h2>A key concept</h2>
+						<p>The carbon footprint of computing has two parts:</p>
+						<div class="concept-row">
+							<div class="concept-box fragment" style="width: 40%;">
+								<h4>Operational carbon</h4>
+								<ul>
+									<li>Emissions from the <strong>electricity used</strong> to run the hardware</li>
+									<li>Includes overheads such as cooling and networking</li>
+									<li>Scales with <em>how much</em> we compute, and <em>when and where</em></li>
+								</ul>
+							</div>
+							<div class="concept-box fragment" style="width: 40%;">
+								<h4>Embodied carbon</h4>
+								<ul>
+									<li>Emissions from <strong>manufacturing</strong>, transporting and disposing of hardware</li>
+									<li>Mining raw materials, chip fabrication, building the data centre</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>What can we control?</h3>
+						<p>
+							As users of a shared HPC system, procurement and hardware lifetime are largely out of our hands.
+						</p>
+						<p class="fragment">
+							<strong>Operational carbon</strong> is where our day-to-day choices make a difference, so it is the
+							focus of the rest of this talk.
+						</p>
+						<aside class="notes">
+							Embodied carbon still matters: e.g. don't buy a new laptop or GPU workstation unnecessarily,
+							and keep hardware for longer. But for HPC usage, operational is our lever.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 4. Operational carbon -->
+				<section>
+					<h2>Operational carbon</h2>
+					<p>The energy used by a computation comes from multiple sources:</p>
+					<ul>
+						<li class="fragment">Powering CPUs/GPUs, memory and storage</li>
+						<li class="fragment">Networking and the rest of the facility</li>
+						<li class="fragment">Cooling the facility, often the largest overhead</li>
+					</ul>
+					<p class="fragment">
+						\[ \text{carbon} = \text{energy used} \times \text{carbon intensity of the electricity} \]
+					</p>
+					<aside class="notes">
+						This equation frames the next two sections: reduce the energy (efficiency) or reduce the
+						carbon intensity (carbon awareness).
+					</aside>
+				</section>
+
+				<!-- 5. Energy efficiency -->
+				<section>
+					<section>
+						<h2>Energy efficiency</h2>
+						<p>Getting the same science done with less energy.</p>
+						<div class="concept-row">
+							<div class="concept-box" style="width: 40%;">
+								<h4>Software</h4>
+								<ul>
+									<li class="fragment">Well designed, efficient code (vectorisation, avoiding repeated work)</li>
+									<li class="fragment">Profiling before optimisation (e.g., using <code>cProfile</code>)</li>
+									<li class="fragment">Appropriate software choices, e.g. the smallest AI model that does the job</li>
+								</ul>
+							</div>
+							<div class="concept-box" style="width: 40%;">
+								<h4>Resources</h4>
+								<ul>
+									<li class="fragment">Accurate resource requests, idle cores and memory still draw power</li>
+									<li class="fragment">Minimising stored data, storage requires energy</li>
+									<li class="fragment">Using the right hardware (GPUs/CPUs)</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+
+					<section>
+						<h3>Example: accurate resource requests</h3>
+						<img src="assets/green_algorithms_memory.png" style="width: 76%; height: auto; margin: 0;">
+						<p class="credit">
+							The same 4-hour, 1-core job in the UK with increasing memory requested.
+							Estimated with the <a href="https://calculator.green-algorithms.org/">Green Algorithms calculator</a> (v3.1).
+						</p>
+						<aside class="notes">
+							Going from 8 to 32 GB nearly doubles the operational footprint (10.7 &rarr; 19.8 g) for the same
+							job, because reserved memory draws power whether or not you use it.
+							Show how to check your job efficiency with <code>seff &lt;jobid&gt;</code> after a job completes.
+						</aside>
+					</section>
+
+					<section>
+						<h3>Example: choosing the right model</h3>
+						<img src="assets/llm_code_review_usage.png" style="width: 85%; height: auto; margin: 0;">
+						<p class="credit">
+							The same code review in Claude Code at different model and reasoning-effort settings.
+							Inference impact isn't disclosed, so token usage is used as a proxy.
+						</p>
+						<p style="font-size: 0.6em;">
+							The best review came from <strong>Opus at medium effort</strong> &mdash;
+							more effort cost 3&ndash;7&times; the tokens without a better result.
+						</p>
+						<aside class="notes">
+							Sonnet extra used ~7&times; the tokens of Sonnet medium; Opus extra ~3&times; Opus medium.
+							A bigger model at moderate effort beat a smaller model at maximum effort here, so "smallest model"
+							isn't always the efficient choice: match the model and effort to the task, and try lower effort first.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 6. Carbon awareness -->
+				<section>
+					<section>
+						<h2>Carbon awareness</h2>
+						<p>
+							The <strong>carbon intensity</strong> of the electricity grid (gCO<sub>2</sub>/kWh) depends on
+							the mix of generation at that moment.
+						</p>
+						<p class="fragment">
+							In the UK it varies both in <strong>time</strong> (time of day, weather, season) and
+							<strong>space</strong> (between regions).
+						</p>
+						<p class="fragment">
+							Live map: <a href="https://carbonintensity.org.uk/">carbonintensity.org.uk</a>
+						</p>
+					</section>
+
+					<!-- <section>
+						<h3>The UK grid varies</h3>
+						<div class="plot-placeholder">
+							[Figure: screenshot of the carbonintensity.org.uk regional map, alongside a ~48h time series
+							of London carbon intensity showing the daily peaks and troughs]
+						</div>
+						<p class="credit">Source: <a href="https://carbonintensity.org.uk/">National Energy System Operator, carbonintensity.org.uk</a></p>
+						<aside class="notes">
+							Option: click through to the live site here instead of using a static figure.
+						</aside>
+					</section> -->
+
+					<section>
+						<h3>Mitigation: shifting workloads</h3>
+						<div class="concept-row">
+							<div class="concept-box fragment" style="width: 40%;">
+								<h4>Temporal shifting</h4>
+								<ul>
+									<li>Run jobs when the carbon intensity of the grid is lower, e.g. overnight</li>
+									<li>Suits work that isn't urgent: large sweeps, re-runs, batch analysis</li>
+								</ul>
+							</div>
+							<div class="concept-box fragment" style="width: 40%;">
+								<h4>Spatial shifting</h4>
+								<ul>
+									<li>Run jobs in a region or data centre with a cleaner grid</li>
+									<li>Mostly a choice when using cloud or national facilities</li>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- 7. What can we do as a researchers -->
+				<section>
+					<section>
+						<h2>What can we do as a researchers?</h2>
+						<p>Think about sustainability across the whole life of a project:</p>
+						<div class="flow">
+							<div class="concept-box stage">
+								<h4>Planning</h4>
+								<p>minimise what we run</p>
+							</div>
+							<span class="arrow">&rarr;</span>
+							<div class="concept-box stage">
+								<h4>Running</h4>
+								<p>run it efficiently, once</p>
+							</div>
+							<span class="arrow">&rarr;</span>
+							<div class="concept-box stage">
+								<h4>Finishing</h4>
+								<p>tidy, document, share</p>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<!-- 8. Responsible computing plans -->
+				<section>
+					<section>
+						<h2>1. Planning</h2>
+						<p>Think about how you can minimise resource usage before you start.</p>
+						<ul style="font-size: 0.8em;">
+							<li class="fragment"><strong>Debug small</strong> &mdash; test workflows on a small-scale experiment before launching the full run</li>
+							<li class="fragment"><strong>Choose the right LLM</strong> &mdash; pick a model size and effort level appropriate to the task</li>
+							<li class="fragment"><strong>Plan your data</strong> &mdash; avoid multiple copies and piles of intermediate files</li>
+						</ul>
+						<aside class="notes">
+							LLMs: a quick lookup or a small refactor doesn't need the largest model at maximum effort.
+							The EcoLogits calculator (in resources) estimates the footprint of LLM calls.
+						</aside>
+					</section>
+
+					<section>
+						<h2>2. Running the project</h2>
+						<ul style="font-size: 0.8em;">
+							<li class="fragment"><strong>Test</strong> your code so a full run doesn't fail halfway through</li>
+							<li class="fragment"><strong>Benchmark</strong> a representative job to learn its real compute and memory needs</li>
+							<ul class="fragment" style="font-size: 0.8em;">
+								<li>use <code>seff &lt;jobid&gt;</code> to check these</li>
+							</ul>
+							<li class="fragment"><strong>Record enough information</strong> (versions, parameters, seeds, outputs) to avoid having to rerun experiments</li>
+						</ul>
+					</section>
+
+					<section>
+						<h3>Temporal shifting</h3>
+						<p style="font-size: 0.8em;">Slurm lets you delay when a job becomes eligible to run:</p>
+						<pre class="hpc-code"><code data-trim data-noescape class="bash">
+# eligible to start two hours from now
+sbatch --begin=now+2hours myscript.sh
+
+# eligible to start overnight
+sbatch --begin=23:00 myscript.sh
+						</code></pre>
+						<p class="fragment" style="font-size: 0.7em;">
+							Note: the job only <em>joins the queue</em> once the start time has passed, so it may
+							not start exactly then.
+						</p>
+						<p class="fragment" style="font-size: 0.7em;">
+							Check the forecast at <a href="https://carbonintensity.org.uk/">carbonintensity.org.uk</a> to pick a greener window.
+						</p>
+					</section>
+
+					<section>
+						<h2>3. Finishing the project</h2>
+						<ul style="font-size: 0.8em;">
+							<li class="fragment"><strong>Publish</strong> the data and code so others don't need to regenerate them</li>
+							<li class="fragment"><strong>Write good docs</strong> so someone else (or future you) can pick up the project</li>
+							<li class="fragment"><strong>Archive important data</strong> and delete the rest</li>
+						</ul>
+						<div class="fragment" style="margin-top: 30px;">
+							<p>Data storage is not free:</p>
+							<p class="big-number" style="font-size: 1.6em;">1 TB &asymp; 10 kg CO<sub>2</sub>e per year</p>
+							<p class="credit">
+								<a href="https://www.nature.com/articles/s43586-023-00202-5">Lannelongue et al., Nature Reviews Methods Primers 2023</a>
+							</p>
+						</div>
+						<aside class="notes">
+							For scale: ~10 kg CO2e is roughly a 50&ndash;60 mile drive in an average petrol car.
+						</aside>
+					</section>
+				</section>
+
+				<!-- 9. Green DiSC -->
+				<section>
+					<section>
+						<h2>Green DiSC certification</h2>
+						<p>
+							The <a href="https://www.software.ac.uk/GreenDiSC">Green Digital Sustainability Certification</a>
+							is an open-access scheme for research institutions to track and mitigate the impact of their computing
+						</p>
+						<p>
+							The scheme has three levels (bronze, silver, and gold) and you can apply for certification at the research group level
+						</p>
+					</section>
+				</section>
+
+				<!-- 11. Summary -->
+				<section>
+					<h2>Summary</h2>
+					<ul>
+						<li>Research computing has a real and growing carbon footprint</li>
+						<li>As HPC users, <strong>operational carbon</strong> is where we can make a difference</li>
+						<li>Reduce it through <strong>energy efficiency</strong> and <strong>carbon awareness</strong></li>
+						<li>Plan, run and finish projects responsibly and consider applying for Green DiSC certification</li>
+					</ul>
+				</section>
+
+				<!-- 12. Resources -->
+				<section>
+					<h2>Resources</h2>
+					<ul>
+						<li><a href="https://calculator.green-algorithms.org/">Green Algorithms</a> &mdash; estimate the footprint of a computation</li>
+						<li><a href="https://calculator.ecologits.ai/">EcoLogits</a> &mdash; estimate the footprint of AI/LLM usage</li>
+						<li><a href="https://carbonintensity.org.uk/">Carbon Intensity API</a> &mdash; live and forecast UK grid carbon intensity</li>
+						<li><a href="https://www.software.ac.uk/GreenDiSC">Green DiSC</a> &mdash; the certification scheme</li>
+						<li><a href="https://www.nature.com/articles/s43586-023-00202-5">Lannelongue et al. 2023</a> &mdash; carbon footprint estimation for computational research</li>
+					</ul>
+				</section>
+
+				<!-- 13. Questions -->
+				<section>
+					<h2>Thank you for listening</h2>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				controlsTutorial: false,
+				progress: true,
+				center: true,
+				hash: true,
+				slideNumber: 'c/t',
+
+				// MathJax4 configuration
+				mathjax4: {
+					tex: {
+						inlineMath: [['$', '$'], ['\\(', '\\)']],
+						displayMath: [['$$', '$$'], ['\\[', '\\]']]
+					},
+					options: {
+						skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+					},
+					output: {
+						font: 'mathjax-stix2'
+					}
+				},
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMath.MathJax4, RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>
